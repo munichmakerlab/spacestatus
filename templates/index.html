@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Munich Maker Lab - Lab Status</title>
+        <link href="{{ url_for('static', filename='capsule.css') }}" rel="stylesheet">
+    </head>
+    <body>
+        <header>
+            <h1>Munich Maker Lab - Lab Status</h1>
+            <nav>
+                <a href="https://munichmakerlab.de">Home</a>
+                <a href="https://wiki.munichmakerlab.de">Wiki</a>
+                <a href="https://munichmakerlab.de/contact.html">Contact</a>
+            </nav>
+        </header>
+        <main>
+            <section>
+                <article>
+                    {% if status == "1" %}
+                        <img src="{{ url_for('static', filename='open.png') }}">
+                        <p>The lab is currently open.</p>
+                    {% elif status == "0" %}
+                        <img src="{{ url_for('static', filename='closed.png') }}">
+                        <p>The lab is currently closed.</p>
+                    {% else %}
+                        <img src="{{ url_for('static', filename='unknown.png') }}">
+                        <p>The status of the lab is currently unknown.</p>
+                    {% endif %}
+                </article>
+            </section>
+
+            <section>
+                <article>
+                    <h2>Devices</h2>
+                    <table>
+                        {% for device, dev_state in devices.items() %}
+                            <tr><th>{{ device }}</th><td>{{ dev_state }}</td></tr>
+                        {% endfor %}
+                    </table>
+                </article>
+            </section>
+
+            <section>
+                <article>
+                    <h2>Temperature</h2>
+                    <iframe src="https://graphs.maqn.de/dashboard-solo/db/mumalab-climate?panelId=1&theme=light" width="450" height="200" frameborder="0"></iframe>
+                    <p><a href="https://graphs.maqn.de/dashboard/db/mumalab-climate">Lab Climate Dashboard</a></p>
+                </article>
+            </section>
+        </main>
+        <footer>
+            <a href="https://munichmakerlab.de/imprint.html">Impressum/Imprint</a> - <a href="https://munichmakerlab.de/privacy.html">Datenschutzerklärung/Privacy Policy</a>
+        </footer>
+    </body>
+</html>
