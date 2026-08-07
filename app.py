@@ -98,10 +98,6 @@ def get_space_api():
         },
         "contact": {
             "email": "info@munichmakerlab.de",
-            "irc": "irc://irc.hackint.eu/munichmakerlab",
-            "ml": "discuss@munichmakerlab.de",
-            "twitter": "@munichmakerlab",
-            "phone": "+498921553954",
             "issue_mail": base64.b64encode("spaceapi@tiefpunkt.com".encode()).decode()
         },
         "issue_report_channels": ["issue_mail"],
