@@ -14,7 +14,7 @@
             </nav>
         </header>
         <main>
-            <section>
+            <section class="status-section">
                 <article>
                     {% if status == "1" %}
                         <img src="{{ url_for('static', filename='open.png') }}">
@@ -29,7 +29,7 @@
                 </article>
             </section>
 
-            <section>
+            <section class="dashboard-section">
                 <article class="dashboard-article">
                     <h2>Opening Times Dashboard</h2>
                     <p class="dashboard-description">Typical opening times based on historical data.</p>
