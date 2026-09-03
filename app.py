@@ -1,4 +1,5 @@
 import base64
+import os
 import re
 import threading
 import time
@@ -8,25 +9,42 @@ from flask import Flask, current_app, jsonify, render_template
 from flask_caching import Cache
 from flask_mqtt import Mqtt
 
+
+def _env_str(name, default):
+    return os.environ.get(name, default)
+
+
+def _env_int(name, default):
+    value = os.environ.get(name)
+    return int(value) if value else default
+
+
+def _env_bool(name, default):
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() in ("1", "true", "yes", "on")
+
+
 app = Flask(__name__)
 cache = Cache(config={'CACHE_TYPE': 'SimpleCache'})
 cache.init_app(app)
 
-app.config['MQTT_BROKER_URL'] = 'mqtt.munichmakerlab.de'
-app.config['MQTT_BROKER_PORT'] = 1883
-app.config['MQTT_USERNAME'] = ''  # Set this item when you need to verify username and password
-app.config['MQTT_PASSWORD'] = ''  # Set this item when you need to verify username and password
-app.config['MQTT_KEEPALIVE'] = 5  # Set KeepAlive time in seconds
-app.config['MQTT_TLS_ENABLED'] = False  # If your broker supports TLS, set it True
+app.config['MQTT_BROKER_URL'] = _env_str('MQTT_BROKER_URL', 'mqtt.munichmakerlab.de')
+app.config['MQTT_BROKER_PORT'] = _env_int('MQTT_BROKER_PORT', 1883)
+app.config['MQTT_USERNAME'] = _env_str('MQTT_USERNAME', '')
+app.config['MQTT_PASSWORD'] = _env_str('MQTT_PASSWORD', '')
+app.config['MQTT_KEEPALIVE'] = _env_int('MQTT_KEEPALIVE', 5)
+app.config['MQTT_TLS_ENABLED'] = _env_bool('MQTT_TLS_ENABLED', False)
 
-topic = 'mumalab/room/status'
+topic = _env_str('MQTT_TOPIC', 'mumalab/room/status')
 
-GRAFANA_DASHBOARD_UID = "6ce9eabaea5141a3b4fa1aaad98e45b9"
-GRAFANA_PANEL_ID = 1
+GRAFANA_DASHBOARD_UID = _env_str('GRAFANA_DASHBOARD_UID', "6ce9eabaea5141a3b4fa1aaad98e45b9")
+GRAFANA_PANEL_ID = _env_int('GRAFANA_PANEL_ID', 1)
 WEEKDAY_FIELD_ORDER = ["1", "2", "3", "4", "5", "6", "7"]  # Mon..Sun
 WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 HEATMAP_CACHE_KEY = "opening_heatmap"
-HEATMAP_REFRESH_INTERVAL = 259200  # seconds; every 3 days
+HEATMAP_REFRESH_INTERVAL = _env_int('HEATMAP_REFRESH_INTERVAL', 259200)  # seconds; every 3 days by default
 
 mqtt_client = Mqtt(app)
 

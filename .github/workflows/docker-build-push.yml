@@ -1,9 +1,11 @@
 #
 name: Create and publish a Docker image
 
-# Runs only when a version tag (e.g. v1.2.0) is pushed. Plain branch pushes are handled by lint.yml instead.
+# Runs on every push to main (publishes a rolling `main` tag) and on version tag pushes
+# (e.g. v1.2.0, publishes versioned tags + `latest`).
 on:
   push:
+    branches: ['main']
     tags: ['v*']
 
 # Defines two custom environment variables for the workflow. These are used for the Container registry domain, and a name for the Docker image that this workflow builds.
@@ -39,7 +41,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=latest
+            type=raw,value=main,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/') }}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
