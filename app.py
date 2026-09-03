@@ -1,4 +1,5 @@
 import base64
+import os
 import re
 import threading
 import time
@@ -7,6 +8,23 @@ import requests
 from flask import Flask, current_app, jsonify, render_template
 from flask_caching import Cache
 from flask_mqtt import Mqtt
+
+
+def _env_str(name, default):
+    return os.environ.get(name, default)
+
+
+def _env_int(name, default):
+    value = os.environ.get(name)
+    return int(value) if value else default
+
+
+def _env_bool(name, default):
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() in ("1", "true", "yes", "on")
+
 
 app = Flask(__name__)
 cache = Cache(config={'CACHE_TYPE': 'SimpleCache'})
