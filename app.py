@@ -39,12 +39,12 @@ app.config['MQTT_TLS_ENABLED'] = _env_bool('MQTT_TLS_ENABLED', False)
 
 topic = _env_str('MQTT_TOPIC', 'mumalab/room/status')
 
-GRAFANA_DASHBOARD_UID = "6ce9eabaea5141a3b4fa1aaad98e45b9"
-GRAFANA_PANEL_ID = 1
+GRAFANA_DASHBOARD_UID = _env_str('GRAFANA_DASHBOARD_UID', "6ce9eabaea5141a3b4fa1aaad98e45b9")
+GRAFANA_PANEL_ID = _env_int('GRAFANA_PANEL_ID', 1)
 WEEKDAY_FIELD_ORDER = ["1", "2", "3", "4", "5", "6", "7"]  # Mon..Sun
 WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 HEATMAP_CACHE_KEY = "opening_heatmap"
-HEATMAP_REFRESH_INTERVAL = 259200  # seconds; every 3 days
+HEATMAP_REFRESH_INTERVAL = _env_int('HEATMAP_REFRESH_INTERVAL', 259200)  # seconds; every 3 days by default
 
 mqtt_client = Mqtt(app)
 
