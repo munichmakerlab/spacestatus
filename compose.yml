@@ -1,6 +1,17 @@
 services:
   spacestatus:
     build: .
+    environment:
+      MQTT_BROKER_URL: mqtt.munichmakerlab.de
+      MQTT_BROKER_PORT: 1883
+      MQTT_USERNAME: ""
+      MQTT_PASSWORD: ""
+      MQTT_KEEPALIVE: 5
+      MQTT_TLS_ENABLED: "false"
+      MQTT_TOPIC: mumalab/room/status
+      GRAFANA_DASHBOARD_UID: 6ce9eabaea5141a3b4fa1aaad98e45b9
+      GRAFANA_PANEL_ID: 1
+      HEATMAP_REFRESH_INTERVAL: 259200
     ports:
       - "8000:80"
     restart: unless-stopped
