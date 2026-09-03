@@ -30,14 +30,14 @@ app = Flask(__name__)
 cache = Cache(config={'CACHE_TYPE': 'SimpleCache'})
 cache.init_app(app)
 
-app.config['MQTT_BROKER_URL'] = 'mqtt.munichmakerlab.de'
-app.config['MQTT_BROKER_PORT'] = 1883
-app.config['MQTT_USERNAME'] = ''  # Set this item when you need to verify username and password
-app.config['MQTT_PASSWORD'] = ''  # Set this item when you need to verify username and password
-app.config['MQTT_KEEPALIVE'] = 5  # Set KeepAlive time in seconds
-app.config['MQTT_TLS_ENABLED'] = False  # If your broker supports TLS, set it True
+app.config['MQTT_BROKER_URL'] = _env_str('MQTT_BROKER_URL', 'mqtt.munichmakerlab.de')
+app.config['MQTT_BROKER_PORT'] = _env_int('MQTT_BROKER_PORT', 1883)
+app.config['MQTT_USERNAME'] = _env_str('MQTT_USERNAME', '')
+app.config['MQTT_PASSWORD'] = _env_str('MQTT_PASSWORD', '')
+app.config['MQTT_KEEPALIVE'] = _env_int('MQTT_KEEPALIVE', 5)
+app.config['MQTT_TLS_ENABLED'] = _env_bool('MQTT_TLS_ENABLED', False)
 
-topic = 'mumalab/room/status'
+topic = _env_str('MQTT_TOPIC', 'mumalab/room/status')
 
 GRAFANA_DASHBOARD_UID = "6ce9eabaea5141a3b4fa1aaad98e45b9"
 GRAFANA_PANEL_ID = 1
