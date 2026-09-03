@@ -1,9 +1,12 @@
 import base64
-import requests
 import re
-from flask import Flask, request, jsonify, render_template, current_app
-from flask_mqtt import Mqtt
+import threading
+import time
+
+import requests
+from flask import Flask, current_app, jsonify, render_template
 from flask_caching import Cache
+from flask_mqtt import Mqtt
 
 app = Flask(__name__)
 cache = Cache(config={'CACHE_TYPE': 'SimpleCache'})
@@ -17,6 +20,13 @@ app.config['MQTT_KEEPALIVE'] = 5  # Set KeepAlive time in seconds
 app.config['MQTT_TLS_ENABLED'] = False  # If your broker supports TLS, set it True
 
 topic = 'mumalab/room/status'
+
+GRAFANA_DASHBOARD_UID = "6ce9eabaea5141a3b4fa1aaad98e45b9"
+GRAFANA_PANEL_ID = 1
+WEEKDAY_FIELD_ORDER = ["1", "2", "3", "4", "5", "6", "7"]  # Mon..Sun
+WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+HEATMAP_CACHE_KEY = "opening_heatmap"
+HEATMAP_REFRESH_INTERVAL = 259200  # seconds; every 3 days
 
 mqtt_client = Mqtt(app)
 
@@ -44,9 +54,60 @@ def handle_mqtt_message(client, userdata, message):
     print(f'Received message on topic: {message.topic} with payload: {message.payload.decode()}')
     space_status = message.payload.decode()
     
+def _fetch_opening_heatmap():
+    url = f"https://monitoring.munichmakerlab.de/api/public/dashboards/{GRAFANA_DASHBOARD_UID}/panels/{GRAFANA_PANEL_ID}/query"
+    payload = {"intervalMs": 3600000, "maxDataPoints": 1000, "timeRange": {"from": "now-30d", "to": "now"}}
+    try:
+        response = requests.post(url, json=payload, timeout=30)
+        response.raise_for_status()
+        frame = response.json()["results"]["A"]["frames"][0]
+        fields = frame["schema"]["fields"]
+        values = frame["data"]["values"]
+        field_index = {f["name"]: i for i, f in enumerate(fields)}
+        hours = values[field_index["hour"]]
+        rows = []
+        for row_idx, hour in enumerate(hours):
+            row = [values[field_index[day]][row_idx] for day in WEEKDAY_FIELD_ORDER]
+            rows.append({"hour": hour, "cells": row})
+        return {"weekdays": WEEKDAY_LABELS, "rows": rows}
+    except Exception:
+        return None
+
+HEATMAP_RETRY_INTERVAL = 30  # seconds; retry quickly after a failed fetch instead of waiting a full cycle
+
+def _fetch_and_cache_opening_heatmap():
+    data = _fetch_opening_heatmap()
+    if data is not None:
+        cache.set(HEATMAP_CACHE_KEY, data, timeout=HEATMAP_REFRESH_INTERVAL * 2)
+    return data
+
+def _refresh_opening_heatmap_loop(last_fetch_succeeded):
+    success = last_fetch_succeeded
+    while True:
+        time.sleep(HEATMAP_REFRESH_INTERVAL if success else HEATMAP_RETRY_INTERVAL)
+        success = _fetch_and_cache_opening_heatmap() is not None
+
+def get_opening_heatmap():
+    return cache.get(HEATMAP_CACHE_KEY)
+
+# Fetch once synchronously so the data is available immediately after a restart,
+# then hand off to a background thread for the periodic refresh.
+_initial_heatmap_fetch_succeeded = _fetch_and_cache_opening_heatmap() is not None
+threading.Thread(target=_refresh_opening_heatmap_loop, args=(_initial_heatmap_fetch_succeeded,), daemon=True).start()
+
+@app.template_filter('heatmap_color')
+def heatmap_color(value):
+    if value is None:
+        return "#2D333B"
+    if value >= 0.8:
+        return "#1F6F3F"
+    if value >= 0.5:
+        return "#7A5C00"
+    return "#30363D"
+
 @app.route("/")
 def index():
-    return render_template('index.html', status=space_status, devices=get_devices())
+    return render_template('index.html', status=space_status, devices=get_devices(), heatmap=get_opening_heatmap())
 
 @app.route("/simple.php")
 @app.route("/api/v2/simple.txt")

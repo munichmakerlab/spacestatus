@@ -1,30 +1,35 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Munich Maker Lab - Lab Status</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700;800&family=Lora:wght@400;600&display=swap" rel="stylesheet">
         <link href="{{ url_for('static', filename='capsule.css') }}" rel="stylesheet">
     </head>
     <body>
         <header>
             <h1>Munich Maker Lab - Lab Status</h1>
             <nav>
-                <a href="https://munichmakerlab.de">Home</a>
-                <a href="https://wiki.munichmakerlab.de">Wiki</a>
-                <a href="https://munichmakerlab.de/contact">Contact</a>
+                <a class="link-nav" href="https://munichmakerlab.de">Home</a>
+                <a class="link-nav" href="https://wiki.munichmakerlab.de">Wiki</a>
+                <a class="link-nav" href="https://munichmakerlab.de/contact">Contact</a>
             </nav>
         </header>
         <main>
             <section class="status-section">
                 <article>
                     {% if status == "1" %}
-                        <img src="{{ url_for('static', filename='open.png') }}">
-                        <p>The lab is currently open.</p>
+                        <span class="status-badge status-open">● Open</span>
+                        <p class="status-caption">The lab is currently open.</p>
                     {% elif status == "0" %}
-                        <img src="{{ url_for('static', filename='closed.png') }}">
-                        <p>The lab is currently closed.</p>
+                        <span class="status-badge status-closed">● Closed</span>
+                        <p class="status-caption">The lab is currently closed.</p>
                     {% else %}
-                        <img src="{{ url_for('static', filename='unknown.png') }}">
-                        <p>The status of the lab is currently unknown.</p>
+                        <span class="status-badge status-unknown">● Unknown</span>
+                        <p class="status-caption">The status of the lab is currently unknown.</p>
                     {% endif %}
                 </article>
             </section>
@@ -35,19 +40,38 @@
                     <p class="dashboard-description">Typical opening times based on historical data.</p>
                     <p class="dashboard-link">
                         Historical data is also available via
-                        <a href="https://mapall.space/heatmap/show.php?id=Munich+Maker+Lab" target="_blank" rel="noopener noreferrer">mapall.space</a>
+                        <a class="link-nav" href="https://mapall.space/heatmap/show.php?id=Munich+Maker+Lab" target="_blank" rel="noopener noreferrer">mapall.space</a>
                         which uses our SpaceAPI for historical data.
                     </p>
                     <p class="dashboard-link">
-                        <a href="https://monitoring.munichmakerlab.de/public-dashboards/6ce9eabaea5141a3b4fa1aaad98e45b9?from=now-30d&to=now" target="_blank" rel="noopener noreferrer">Open dashboard in a new tab</a>
+                        <a class="link-nav" href="https://monitoring.munichmakerlab.de/public-dashboards/6ce9eabaea5141a3b4fa1aaad98e45b9?from=now-30d&to=now" target="_blank" rel="noopener noreferrer">Open dashboard in a new tab</a>
                     </p>
-                    <iframe
-                        class="dashboard-frame"
-                        src="https://monitoring.munichmakerlab.de/public-dashboards/6ce9eabaea5141a3b4fa1aaad98e45b9?from=now-30d&to=now"
-                        title="Munich Maker Lab Grafana Dashboard"
-                        loading="eager"
-                        referrerpolicy="no-referrer"
-                    ></iframe>
+                    {% if heatmap %}
+                        <div class="heatmap-wrapper">
+                            <table class="heatmap-table">
+                                <thead>
+                                    <tr>
+                                        <th>Hour</th>
+                                        {% for day in heatmap.weekdays %}
+                                            <th>{{ day }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in heatmap.rows %}
+                                        <tr>
+                                            <th>{{ "%02d:00"|format(row.hour) }}</th>
+                                            {% for value in row.cells %}
+                                                <td style="background-color: {{ value|heatmap_color }}">{{ (value * 100)|round|int }}%</td>
+                                            {% endfor %}
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p>Dashboard data is currently unavailable.</p>
+                    {% endif %}
                 </article>
             </section>
 
@@ -65,7 +89,7 @@
             #}
         </main>
         <footer>
-            <a href="https://munichmakerlab.de/imprint.html">Impressum/Imprint</a> - <a href="https://munichmakerlab.de/privacy">Datenschutzerklärung/Privacy Policy</a>
+            <a class="link-nav" href="https://munichmakerlab.de/imprint.html">Impressum/Imprint</a> - <a class="link-nav" href="https://munichmakerlab.de/privacy">Datenschutzerklärung/Privacy Policy</a>
         </footer>
     </body>
 </html>
