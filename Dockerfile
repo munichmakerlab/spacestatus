@@ -1,7 +1,8 @@
-FROM python:3.10
+FROM python:3.12
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 WORKDIR /app
-COPY ./requirements.txt requirements.txt
-RUN pip install --no-cache-dir --upgrade -r requirements.txt
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-install-project --no-dev
 COPY . .
 EXPOSE 80
-CMD ["gunicorn", "--workers", "1", "--bind", "0.0.0.0:80", "app:app"]
+CMD ["uv", "run", "gunicorn", "--workers", "1", "--bind", "0.0.0.0:80", "app:app"]
