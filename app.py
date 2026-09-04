@@ -5,7 +5,7 @@ import threading
 import time
 
 import requests
-from flask import Flask, current_app, jsonify, render_template
+from flask import Flask, jsonify, render_template
 from flask_caching import Cache
 from flask_mqtt import Mqtt
 
@@ -145,18 +145,6 @@ def get_status_api():
     }
 
     return jsonify(data), json_headers
-
-@app.route('/image.php')
-@app.route('/api/v2/image.png')
-def send_status_image():
-    if space_status == "1":
-        filename = "open.png"
-    elif space_status == "0":
-        filename = "closed.png"
-    else:
-        filename = "unknown.png"
-    
-    return current_app.send_static_file(filename)
 
 @app.route('/spaceapi.json')
 def get_space_api():

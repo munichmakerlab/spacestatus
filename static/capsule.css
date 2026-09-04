@@ -9,6 +9,7 @@
   --color-border: #30363D;
   --color-muted: #2D333B;
   --color-error: #F87171;
+  --color-error-bg: #3B1418;
   --color-success: #4ADE80;
   --color-success-bg: #16301F;
   --color-neutral-bg: #2D333B;
@@ -148,7 +149,7 @@ main article p {
   margin: 0;
 }
 .status-caption {
-  font-size: var(--fs-headline-md);
+  font-size: var(--fs-headline-lg);
 }
 @media (min-width: 800px) {
   main {
@@ -188,10 +189,10 @@ table {
   display: inline-block;
   font-family: var(--font-headline);
   font-weight: 800;
-  font-size: var(--fs-headline-lg);
+  font-size: 3rem;
   letter-spacing: .06em;
   text-transform: uppercase;
-  padding: 16px 40px;
+  padding: 24px 56px;
   border-radius: var(--radius-full);
 }
 .status-open {
@@ -199,8 +200,8 @@ table {
   color: var(--color-success);
 }
 .status-closed {
-  background: var(--color-primary);
-  color: var(--color-primary-contrast);
+  background: var(--color-error-bg);
+  color: var(--color-error);
 }
 .status-unknown {
   background: var(--color-muted);
